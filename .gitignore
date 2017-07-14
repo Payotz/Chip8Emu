@@ -1,10 +1,9 @@
 invaders.c8
 .vscode/settings.json
 SDL2_image.dll
+SDL2_mixer.dll
+SDL2.dll
 main.exe
 main.obj
 pong
 s
-SDL2_image.dll
-SDL2_mixer.dll
-SDL2.dll

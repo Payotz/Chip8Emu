@@ -24,10 +24,10 @@ int main (int argc, char* argv[]){
                         rect.y = j;
                         rect.w = 10;
                         rect.h = 10;
-                        if(MyChip8.gfx[i*j] == 1){
+                        if(MyChip8.gfx[i][j] == 1){
                             SDL_SetRenderDrawColor(renderTarget,0,0,0,0);
                             SDL_RenderFillRect(renderTarget,&rect);
-                        }else if(MyChip8.gfx[i*j] == 0){
+                        }else if(MyChip8.gfx[i][j] == 0){
                             SDL_SetRenderDrawColor(renderTarget,255,255,255,255);
                             SDL_RenderFillRect(renderTarget,&rect);
                         }

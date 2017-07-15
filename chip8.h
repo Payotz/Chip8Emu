@@ -28,7 +28,7 @@ struct chip8{
     unsigned char V[16];
     unsigned short I;
     unsigned short pc;
-    unsigned char gfx[64*32];
+    unsigned char gfx[64][32];
     unsigned char delay_timer;
     unsigned char sound_timer;
     unsigned short stack[16];
@@ -56,6 +56,11 @@ struct chip8{
         }
         for (int i = 0; i < 16; ++i){
             key[i] = V[i] = 0;
+        }
+        for (int i = 0; i < 64; ++i){
+            for (int j = 0; j < 32; ++j){
+                gfx[i][j] = 0;
+            }
         }
         renderTarget = renderer;
 
@@ -200,42 +205,42 @@ struct chip8{
         pc = opcode & 0x0FFF;
     }
     void op_3XNN(){
-        if((V[opcode & 0x0F00]) == (opcode & 0x0FF0)){
+        if((V[(opcode & 0x0F00) >> 8]) == (opcode & 0x0FF0) >> 4){
             pc +=4;
         }
     }
     void op_4XNN(){
-        if((V[opcode & 0x0F00]) != (opcode & 0x0FF0)){
+        if((V[opcode & 0x0F00] >> 8) != (opcode & 0x0FF0) >> 4){
             pc +=4;
         }
     }
     void op_5XYO(){
-        if((opcode & 0xF000) == (opcode & 0x0F00)){
+        if(((opcode & 0xF000) >> 12 ) == ((opcode & 0x0F00) >> 8)){
             pc +=4;
         }
     }
     void op_6XNN(){
-        V[opcode & 0x0F00] = (opcode & 0x00FF);
+        V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
         pc += 2;
     }
     void op_7XNN(){
-        V[opcode & 0xF000] += (opcode & 0x00FF);
+        V[(opcode & 0xF000) >> 12] += (opcode & 0x00FF);
         pc +=2;
     }
     void op_8XY0(){
-        V[opcode & 0x0F00] = (opcode & 0x00F0);
+        V[(opcode & 0x0F00) >> 8] = ((opcode & 0x00F0) >> 4);
         pc +=2;
     }
     void op_8XY1(){
-        V[opcode & 0x0F00] = ((opcode & 0x0F00) | (opcode & 0x00F0));
+        V[(opcode & 0x0F00) >> 8] = (((opcode & 0x0F00) >> 8) | ((opcode & 0x00F0) >> 4));
         pc +=2;
     }
     void op_8XY2(){
-        V[opcode & 0x0F00] = ((opcode & 0x0F00) & (opcode & 0x00F0));
+        V[(opcode & 0x0F00) >> 8] = (((opcode & 0x0F00) >> 8) & ((opcode & 0x00F0) >> 4));
         pc +=2;
     }
     void op_8XY3(){
-        V[opcode & 0x0F00] = ((opcode & 0x0F00) ^ (opcode & 0x00F0));
+        V[(opcode & 0x0F00) >> 8] = (((opcode & 0x0F00) >> 8) ^ ((opcode & 0x00F0) >> 4));
         pc +=2;
     }
     void op_8XY4(){
@@ -246,28 +251,28 @@ struct chip8{
         }
     }
     void op_8XY5(){
-        if((opcode & 0x00F0) > V[opcode & 0x0F00]){
+        if(((opcode & 0x00F0) >> 4) > V[(opcode & 0x0F00) >> 8]){
             V[0xF] = 0;
         }else{
             V[0xF] = 1;
         }
-        V[opcode & 0x0F00] -= (opcode & 0x00F0);
+        V[(opcode & 0x0F00) >> 8] -= ((opcode & 0x00F0) >> 4);
         pc += 2;
     }
     void op_8XY6(){
-        V[opcode & 0x0F00] = V[opcode & 0x0F00] >> 1;
+        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] >> 1;
         pc +=2;
     }
     void op_8XY7(){
-        V[opcode & 0x0F00] = V[opcode & 0x00F0] - V[opcode & 0x0F00];
+        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
         pc += 2;
     }
     void op_8XYE(){
-        V[opcode & 0x0F00] = V[opcode & 0x0F00] << 1;
+        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] << 1;
         pc += 2;
     }
     void op_9XY0(){
-        if((opcode & 0x0F00) != (opcode & 0x00F0)){
+        if(((opcode & 0x0F00) >> 8) != ((opcode & 0x00F0) >> 4)){
             pc +=4;
         }
     }
@@ -289,6 +294,18 @@ struct chip8{
         unsigned short pixel;
 
         V[0xF] = 0;
+        for (int yline = 0; yline < height; yline++){
+            pixel = memory[I + yline];
+            for(int xline = 0; xline < 8; xline++){
+                if(gfx[x + xline][y + yline] == 1){
+                    V[0xF] = 1;
+                }
+                gfx[x + xline][y + yline] ^= 1;
+            }
+        }
+        drawFlag = true;
+        pc += 2;
+        /*V[0xF] = 0;
         for(int yline = 0; yline < height; yline ++){
             pixel = memory[I + yline];
             for(int xline = 0; xline < 8; xline++){
@@ -299,7 +316,7 @@ struct chip8{
             }
         }
         drawFlag = true;
-        pc += 2;
+        pc += 2;*/
     }
     void op_EX9E(){
         if(key[V[(opcode & 0x0F00) >> 8]] !=8){
@@ -316,33 +333,33 @@ struct chip8{
         }
     }
     void op_FX07(){
-        V[opcode & 0x0F00] = delay_timer;
+        V[(opcode & 0x0F00) >> 8] = delay_timer;
         pc += 2;
     }
     void op_FX0A(){
         setKeys();
         for(int i = 0; i < 16; i++){
             if(key[i] == i){
-                V[opcode & 0x0F00] = key[i];
+                V[(opcode & 0x0F00) >> 8] = key[i];
                 key[i] = 0;
             }
         }
         pc +=2;
     }
     void op_FX15(){
-        delay_timer = V[opcode & 0x0F00];
+        delay_timer = V[(opcode & 0x0F00) >> 8];
         pc +=2;
     }
     void op_FX18(){
-        sound_timer = V[opcode & 0x0F00];
+        sound_timer = V[(opcode & 0x0F00) >> 8];
         pc += 2;
     }
     void op_FX1E(){
-        I += V[opcode & 0x0F00];
+        I += V[(opcode & 0x0F00) >> 8];
         pc += 2;
     }
     void op_FX29(){
-        I = V[opcode & 0x0F00] * 0x5;
+        I = V[(opcode & 0x0F00) >> 8] * 0x5;
         pc +=2;
     }
     void op_FX33(){
@@ -352,13 +369,13 @@ struct chip8{
         pc += 2;
     }
     void op_FX55(){
-        for (int i = 0; i < (opcode & 0x0F00); ++i){
+        for (int i = 0; i < ((opcode & 0x0F00) >> 8); ++i){
             memory[I + i] = V[i];
         }
         pc +=2;
     }
     void op_FX65(){
-        for (int i = 0; i < (opcode & 0x0F00); ++i){
+        for (int i = 0; i < ((opcode & 0x0F00) >> 8); ++i){
             V[i] = memory[I + 1];
         }
         pc +=2;

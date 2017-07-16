@@ -98,6 +98,7 @@ struct chip8{
                     case 0x0FFF: op_00EE(); break;
                     default:break;
                 }break;
+            case 0x1000:op_1NNN(); break;
             case 0x2000:op_2NNN(); break;
             case 0x3000:op_3XNN(); break;
             case 0x4000:op_4XNN(); break;
@@ -144,7 +145,7 @@ struct chip8{
                 }break;
 
             default:
-                std::cout << "Unknown Opcode " << std::endl;
+                std::cout << "Unknown Opcode " << opcode << std::endl;
                 break;
 
         }

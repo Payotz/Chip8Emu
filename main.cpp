@@ -8,7 +8,7 @@ int main (int argc, char* argv[]){
     SDL_Window *window = SDL_CreateWindow("Hello World!",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,640,320,SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     SDL_Renderer *renderTarget = SDL_CreateRenderer(window,-1,0);
     MyChip8.initialize(renderTarget);
-    MyChip8.loadFile("invaders.c8");
+    MyChip8.loadFile(argv[1]);
 
     while(MyChip8.running){
         MyChip8.emulateCycle();
@@ -16,14 +16,14 @@ int main (int argc, char* argv[]){
             SDL_Rect rect;
             rect.x = 0;
             rect.y = 0;
-            rect.h = 64;
-            rect.w = 64;
+            rect.h = 0;
+            rect.w = 0;
             for(int i = 0; i < 64; ++i){
                 for(int j = 0; j < 32; ++j){
                         rect.x = i;
                         rect.y = j;
-                        rect.w = 100;
-                        rect.h = 100;
+                        rect.w = 64;
+                        rect.h = 64;
                         if(MyChip8.gfx[i][j] == 1){
                             SDL_SetRenderDrawColor(renderTarget,0,0,0,0);
                             SDL_RenderFillRect(renderTarget,&rect);
@@ -34,7 +34,7 @@ int main (int argc, char* argv[]){
                     }
                 }
             }
-        SDL_Delay(1000);
+        //SDL_Delay(1000);
         SDL_RenderPresent(renderTarget);
         }
     std::cout << "Hello World!" << std::endl; 

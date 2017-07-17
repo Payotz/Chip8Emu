@@ -254,17 +254,17 @@ struct chip8{
     }
     // Sets VX to VX or VY. (Bitwise OR operation)
     void op_8XY1(){
-        V[(opcode & 0x0F00) >> 8] = V[(((opcode & 0x0F00) >> 8)] | V[((opcode & 0x00F0) >> 4))];
+        V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] | V[((opcode & 0x00F0) >> 4)];
         pc +=2;
     }
     // Sets VX to VX and VY. (Bitwise AND operation
     void op_8XY2(){
-        V[(opcode & 0x0F00) >> 8] = V[(((opcode & 0x0F00) >> 8)] & V[((opcode & 0x00F0) >> 4))];
+        V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] & V[((opcode & 0x00F0) >> 4)];
         pc +=2;
     }
     // Sets VX to VX xor VY.
     void op_8XY3(){
-        V[(opcode & 0x0F00) >> 8] = V[(((opcode & 0x0F00) >> 8)] ^ V[((opcode & 0x00F0) >> 4))];
+        V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] ^ V[((opcode & 0x00F0) >> 4)];
         pc +=2;
     }
     // Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.

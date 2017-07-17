@@ -34,7 +34,7 @@ int main (int argc, char* argv[]){
                     }
                 }
             }
-        //SDL_Delay(1000);
+        SDL_Delay(500);
         SDL_RenderPresent(renderTarget);
         }
     std::cout << "Hello World!" << std::endl; 

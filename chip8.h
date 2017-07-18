@@ -57,6 +57,9 @@ struct chip8{
             memory[i] = chip8_fontset[i];
         }
         for (int i = 0; i < 16; ++i){
+            stack[i] = 0;
+        }
+        for (int i = 0; i < 16; ++i){
             key[i] = V[i] = 0;
         }
         for (int i = 0; i < 64; ++i){
@@ -86,14 +89,10 @@ struct chip8{
     }
 
     void emulateCycle(){
-        //Fetch Opcode
         opcode = memory[pc] << 8 | memory[pc+1];
         std::cout << opcode << std::endl;
         std::cout << "Program Counter :" << pc << std::endl;
-        //Decode Opcode
-        //Execute Opcode
         switch(opcode & 0xF000){
-            //Execute OPcode
             case 0x0000:
                 switch(opcode & 0x0FFF){
                     case 0x0FF0: op_00E0(); break;
@@ -194,7 +193,7 @@ struct chip8{
 
     // Clears the screen.
     void op_00E0(){
-        SDL_SetRenderDrawColor(renderTarget,0,0,0,0);
+        SDL_SetRenderDrawColor(renderTarget,255,255,255,255);
         SDL_RenderPresent(renderTarget);
         pc +=2;
     }
@@ -331,17 +330,19 @@ struct chip8{
     void op_DXYN(){
         unsigned short x = V[(opcode & 0x0F00) >> 8];
         unsigned short y = V[(opcode & 0x00F0) >> 4];
-        unsigned short height = opcode & 0x009F;
+        unsigned short height = opcode & 0x000F;
         unsigned short pixel;
 
         V[0xF] = 0;
         for (int yline = 0; yline < height; yline++){
             pixel = memory[I + yline];
             for(int xline = 0; xline < 8; xline++){
-                if(gfx[x + xline][y + yline] == 1){
-                    V[0xF] = 1;
+                if((pixel & (0x80 >> xline)) !=0){
+                    if(gfx[x + xline][y + yline] == 1){
+                        V[0xF] = 1;
+                    }
+                    gfx[x + xline][y + yline] ^= 1;
                 }
-                gfx[x + xline][y + yline] ^= 1;
             }
         }
         drawFlag = true;
@@ -370,14 +371,17 @@ struct chip8{
     }
     // A key press is awaited, and then stored in VX. (Blocking Operation. All instruction halted until next key event)
     void op_FX0A(){
-        while(!setKeys()){
-            ;
-        }
+        bool keyPress = false;
         for(int i = 0; i < 16; i++){
-            V[(opcode & 0x0F00) >> 8] = key[i];
-            key[i] = 0;
+            if(key[i] != 0){
+                V[(opcode & 0x0F00) >> 8] = key[i];
+                keyPress = true;
+            }
+            if(!keyPress){
+                return;
+            }
+            pc +=2;
         }
-        pc +=2;
     }
     // Sets the delay timer to VX.
     void op_FX15(){

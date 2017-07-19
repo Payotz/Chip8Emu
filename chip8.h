@@ -252,7 +252,7 @@ struct chip8{
     }
     // Skips the next instruction if VX equals VY. (Usually the next instruction is a jump to skip a code block)
     void op_5XY0(){
-        if(((opcode & 0x0F00) >> 12 ) == ((opcode & 0x00F0) >> 8)){
+        if(((opcode & 0x0F00) >> 8 ) == ((opcode & 0x00F0) >> 4)){
             pc +=4;
         }else{
             pc +=2;
@@ -265,7 +265,7 @@ struct chip8{
     }
     // Adds NN to VX.
     void op_7XNN(){
-        V[(opcode & 0xF000) >> 12] += (opcode & 0x00FF);
+        V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
         pc +=2;
     }
     // Sets VX to the value of VY.

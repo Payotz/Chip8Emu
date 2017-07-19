@@ -30,6 +30,7 @@ struct chip8{
     unsigned short I;
     unsigned short pc;
     unsigned char gfx[64][32];
+    unsigned char oldgfx[64][32];
     unsigned char delay_timer;
     unsigned char sound_timer;
     unsigned short stack[16];
@@ -42,9 +43,8 @@ struct chip8{
 
     typedef void (*Opcode)();
     Opcode opcode_list[35];
-    SDL_Renderer *renderTarget;
 
-    void initialize(SDL_Renderer *renderer){
+    void initialize(){
         //Init registers and memory once
         pc = 0x200;
         opcode = 0;
@@ -64,12 +64,9 @@ struct chip8{
         }
         for (int i = 0; i < 64; ++i){
             for (int j = 0; j < 32; ++j){
-                gfx[i][j] = 0;
+                gfx[i][j] = oldgfx[i][j] = 0;
             }
-        }
-        renderTarget = renderer;
-
-        
+        }   
     }
 
     void loadFile(const char* fileName){
@@ -103,7 +100,7 @@ struct chip8{
             case 0x2000:op_2NNN(); break;
             case 0x3000:op_3XNN(); break;
             case 0x4000:op_4XNN(); break;
-            case 0x5000:op_5XYO(); break;
+            case 0x5000:op_5XY0(); break;
             case 0x6000:op_6XNN(); break;
             case 0x7000:op_7XNN(); break;
             case 0x8000:
@@ -164,7 +161,7 @@ struct chip8{
     bool setKeys(){
         SDL_Event event;
         SDL_PollEvent(&event);
-        if(event.type == SDL_KEYUP){
+        if(event.type == SDL_KEYDOWN){
             switch(event.key.keysym.sym){
                 case SDLK_1: key[0x1] = 1; return true; break;
                 case SDLK_2: key[0x2] = 1; return true; break;
@@ -188,13 +185,38 @@ struct chip8{
                     break;
                 default: return false; break;
             }
+        }else{
+            switch(event.key.keysym.sym){
+                case SDLK_1: key[0x1] = 0; return true; break;
+                case SDLK_2: key[0x2] = 0; return true; break;
+                case SDLK_3: key[0x3] = 0; return true; break;
+                case SDLK_4: key[0xC] = 0; return true; break;
+                case SDLK_q: key[0x4] = 0; return true; break;
+                case SDLK_w: key[0x5] = 0; return true; break;
+                case SDLK_e: key[0x6] = 0; return true; break;
+                case SDLK_r: key[0xD] = 0; return true; break;
+                case SDLK_a: key[0x7] = 0; return true; break;
+                case SDLK_s: key[0x8] = 0; return true; break;
+                case SDLK_d: key[0x9] = 0; return true; break;
+                case SDLK_f: key[0xE] = 0; return true; break;
+                case SDLK_z: key[0xA] = 0; return true; break;
+                case SDLK_x: key[0x0] = 0; return true; break;
+                case SDLK_c: key[0xB] = 0; return true; break;
+                case SDLK_v: key[0xF] = 0; return true; break;
+
+                default: return false; break;
+            }
         }
     }
 
     // Clears the screen.
     void op_00E0(){
-        SDL_SetRenderDrawColor(renderTarget,255,255,255,255);
-        SDL_RenderPresent(renderTarget);
+        for (int i = 0; i < 64; i++){
+            for(int j = 0; j < 32; j++){
+                gfx[i][j] = 0;
+            }
+        }
+        drawFlag = true;
         pc +=2;
     }
     // Returns from a subroutine.
@@ -229,8 +251,8 @@ struct chip8{
         }
     }
     // Skips the next instruction if VX equals VY. (Usually the next instruction is a jump to skip a code block)
-    void op_5XYO(){
-        if(((opcode & 0xF000) >> 12 ) == ((opcode & 0x0F00) >> 8)){
+    void op_5XY0(){
+        if(((opcode & 0x0F00) >> 12 ) == ((opcode & 0x00F0) >> 8)){
             pc +=4;
         }else{
             pc +=2;
@@ -334,6 +356,12 @@ struct chip8{
         unsigned short pixel;
 
         V[0xF] = 0;
+        for (int i =0; i < 64; i++){
+            for (int j = 0; j < 32; j++){
+                oldgfx[i][j] = gfx[i][j];
+            }
+        }
+
         for (int yline = 0; yline < height; yline++){
             pixel = memory[I + yline];
             for(int xline = 0; xline < 8; xline++){

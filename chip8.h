@@ -278,7 +278,7 @@ struct chip8{
         V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] | V[((opcode & 0x00F0) >> 4)];
         pc +=2;
     }
-    // Sets VX to VX and VY. (Bitwise AND operation
+    // Sets VX to VX and VY. (Bitwise AND operation)
     void op_8XY2(){
         V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] & V[((opcode & 0x00F0) >> 4)];
         pc +=2;
@@ -316,12 +316,17 @@ struct chip8{
     }
     // Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
     void op_8XY7(){
+        if(V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]){
+            V[0xF] = 1;
+        } else{
+            V[0xF] = 0;
+        }
         V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
         pc += 2;
     }
     // Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift
     void op_8XYE(){
-        V[0xF] = V[(opcode & 0x0F00) >> 8]  >> 7;
+        V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
         V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] << 1;
         pc += 2;
     }

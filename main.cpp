@@ -34,11 +34,13 @@ int main (int argc, char* argv[]){
                 }
             }
         }
-        SDL_Delay(100);
+        SDL_Delay(50);
         SDL_RenderPresent(renderTarget);
         MyChip8.drawFlag = false;
         }
-    std::cout << "Hello World!" << std::endl; 
+    SDL_DestroyRenderer(renderTarget);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
 

@@ -92,8 +92,8 @@ struct chip8{
         switch(opcode & 0xF000){
             case 0x0000:
                 switch(opcode & 0x0FFF){
-                    case 0x0FF0: op_00E0(); break;
-                    case 0x0FFF: op_00EE(); break;
+                    case 0x00F0: op_00E0(); break;
+                    case 0x00FF: op_00EE(); break;
                     default:break;
                 }break;
             case 0x1000:op_1NNN(); break;
@@ -221,8 +221,9 @@ struct chip8{
     }
     // Returns from a subroutine.
     void op_00EE(){
-        pc = stack[sp];
         --sp;
+        pc = stack[sp];
+        pc +=2;
     }
     //Jumps to address NNN.
     void op_1NNN(){
@@ -383,7 +384,7 @@ struct chip8{
     }
     // Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block)
     void op_EX9E(){
-        if(key[V[(opcode & 0x0F00) >> 8]] !=8){
+        if(key[V[(opcode & 0x0F00) >> 8]] !=0){
             pc += 4;
         }else{
             pc +=2;

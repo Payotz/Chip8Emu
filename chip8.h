@@ -387,7 +387,7 @@ struct chip8{
         if(key[V[(opcode & 0x0F00) >> 8]] !=0){
             pc += 4;
         }else{
-            pc +=2;
+            pc += 2;
         }
     }
     // Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)
@@ -408,7 +408,7 @@ struct chip8{
         bool keyPress = false;
         for(int i = 0; i < 16; i++){
             if(key[i] != 0){
-                V[(opcode & 0x0F00) >> 8] = key[i];
+                V[(opcode & 0x0F00) >> 8] = i;
                 keyPress = true;
             }
             if(!keyPress){

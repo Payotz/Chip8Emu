@@ -284,17 +284,17 @@ struct chip8{
     }
     // Sets VX to VX or VY. (Bitwise OR operation)
     void op_8XY1(){
-        V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] | V[((opcode & 0x00F0) >> 4)];
+        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] | V[(opcode & 0x00F0) >> 4];
         pc +=2;
     }
     // Sets VX to VX and VY. (Bitwise AND operation)
     void op_8XY2(){
-        V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] & V[((opcode & 0x00F0) >> 4)];
+        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] & V[(opcode & 0x00F0) >> 4];
         pc +=2;
     }
     // Sets VX to VX xor VY.
     void op_8XY3(){
-        V[(opcode & 0x0F00) >> 8] = V[((opcode & 0x0F00) >> 8)] ^ V[((opcode & 0x00F0) >> 4)];
+        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] ^ V[(opcode & 0x00F0) >> 4];
         pc +=2;
     }
     // Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
@@ -304,7 +304,7 @@ struct chip8{
         }else{
             V[0xF] = 0;
         }
-        V[((opcode & 0x0F00) >> 8)] += ((opcode & 0x00F0) >> 4);
+        V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
         pc +=2;
     }
     // VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
@@ -314,7 +314,7 @@ struct chip8{
         }else{
             V[0xF] = 1;
         }
-        V[(opcode & 0x0F00) >> 8] -= ((opcode & 0x00F0) >> 4);
+        V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
         pc += 2;
     }
     // Shifts VX right by one. VF is set to the value of the least significant bit of VX before the shift
@@ -341,7 +341,7 @@ struct chip8{
     }
     // Skips the next instruction if VX doesn't equal VY. (Usually the next instruction is a jump to skip a code block)
     void op_9XY0(){
-        if(((opcode & 0x0F00) >> 8) != ((opcode & 0x00F0) >> 4)){
+        if(V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]){
             pc +=4;
         }
         pc +=2;
@@ -353,11 +353,11 @@ struct chip8{
     }
     // Jumps to the address NNN plus V0.
     void op_BNNN(){
-        pc = V[0] + (opcode & 0x0FFF);
+        pc = (opcode & 0x0FFF) + V[0];
     }
     // Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN.
     void op_CXNN(){
-        V[(opcode & 0xF00) >> 8] = ((rand() % 255) + 1) & (opcode & 0x0FF);
+        V[(opcode & 0x0F00) >> 8] = (rand() % 255) & (opcode & 0x0FF);
         pc +=2;
     }
     // Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N pixels. 
@@ -400,7 +400,7 @@ struct chip8{
     }
     // Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)
     void op_EXA1(){
-        if(key[V[(opcode & 0x0F00) >> 8]] != 0){
+        if(key[V[(opcode & 0x0F00) >> 8]] == 0){
             pc += 2;
         }else{
             pc += 4;
@@ -465,6 +465,7 @@ struct chip8{
         for (int i = 0; i < ((opcode & 0x0F00) >> 8); ++i){
             memory[I + i] = V[i];
         }
+        I += ((opcode & 0x0F00) >> 8 ) + 1;
         pc +=2;
     }
     // Fills V0 to VX (including VX) with values from memory starting at address I
@@ -472,6 +473,7 @@ struct chip8{
         for (int i = 0; i < ((opcode & 0x0F00) >> 8); ++i){
             V[i] = memory[I + 1];
         }
+        I += ((opcode & 0x0F00) >> 8 ) + 1;
         pc +=2;
     }
 } ;

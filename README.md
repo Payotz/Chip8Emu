@@ -14,5 +14,3 @@ Visual Studio 2015 Build Tools
 
 Execute the binary via command line. Ex: `main.exe <rom_file>`
 
-**Issues**
-Input not registering

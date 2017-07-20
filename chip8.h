@@ -66,7 +66,7 @@ struct chip8{
             for (int j = 0; j < 32; ++j){
                 gfx[i][j] = oldgfx[i][j] = 0;
             }
-        }   
+        }
     }
 
     void loadFile(const char* fileName){
@@ -79,6 +79,8 @@ struct chip8{
             input.seekg(0,std::ios::beg);
             input.read(memblock,size);
         }
+        std::cout << "Reading in file : " << fileName << std::endl;
+        std::cout << "Size is : " << size << std::endl;
         for(int i = 0; i < size; ++i){
             memory[i+512] = memblock[i];
         }
@@ -87,8 +89,6 @@ struct chip8{
 
     void emulateCycle(){
         opcode = memory[pc] << 8 | memory[pc+1];
-        //std::cout << opcode << std::endl;
-        //std::cout << "Program Counter :" << pc << std::endl;
         switch(opcode & 0xF000){
             case 0x0000:
                 switch(opcode & 0x0FFF){
@@ -261,7 +261,7 @@ struct chip8{
     }
     // Skips the next instruction if VX equals VY. (Usually the next instruction is a jump to skip a code block)
     void op_5XY0(){
-        if(((opcode & 0x0F00) >> 8 ) == ((opcode & 0x00F0) >> 4)){
+        if(V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]){
             pc +=4;
         }else{
             pc +=2;

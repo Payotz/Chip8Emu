@@ -87,14 +87,16 @@ struct chip8{
 
     void emulateCycle(){
         opcode = memory[pc] << 8 | memory[pc+1];
-        std::cout << opcode << std::endl;
-        std::cout << "Program Counter :" << pc << std::endl;
+        //std::cout << opcode << std::endl;
+        //std::cout << "Program Counter :" << pc << std::endl;
         switch(opcode & 0xF000){
             case 0x0000:
                 switch(opcode & 0x0FFF){
                     case 0x00F0: op_00E0(); break;
                     case 0x00FF: op_00EE(); break;
-                    default:break;
+                    default:
+                        std::cout << "Opcode not found : ( " << opcode << " ) at Memory Location : (" << pc << ")" << std::endl;
+                        break;
                 }break;
             case 0x1000:op_1NNN(); break;
             case 0x2000:op_2NNN(); break;
@@ -114,10 +116,12 @@ struct chip8{
                     case 0x0006:op_8XY6(); break; 
                     case 0x0007:op_8XY7(); break;
                     case 0x000E:op_8XYE(); break;
-                    default:break;
+                    default:
+                        std::cout << "Opcode not found : ( " << opcode << " ) at Memory Location : (" << pc << ")" << std::endl;
+                        break;
                 }break;
             case 0x9000:op_9XY0();break;
-            case 0xA000:op_ANNN();break;;
+            case 0xA000:op_ANNN();break;
             case 0xB000:op_BNNN();break;
             case 0xC000:op_CXNN();break;
             case 0xD000:op_DXYN();break;
@@ -125,7 +129,9 @@ struct chip8{
                 switch(opcode & 0x00FF){
                     case 0x009E:op_EX9E();break;
                     case 0x00A1:op_EXA1();break;
-                    default:break;
+                    default:
+                        std::cout << "Opcode not found : ( " << opcode << " ) at Memory Location : (" << pc << ")" << std::endl;
+                        break;
                 }break;
             case 0xF000:
                 switch(opcode & 0x00FF){
@@ -139,12 +145,14 @@ struct chip8{
                     case 0x0055:op_FX55();break;
                     case 0x0065:op_FX65();break;
 
-                    default:break;
+                    default:
+                        std::cout << "Opcode not found : ( " << opcode << " ) at Memory Location : (" << pc << ")" << std::endl;
+                        break;
                 }break;
 
             default:
-                std::cout << "Unknown Opcode " << opcode << std::endl;
-                break;
+                    std::cout << "Opcode not found : ( " << opcode << " ) at Memory Location : (" << pc << ")" << std::endl;
+                    break;
 
         }
         //Update Timers

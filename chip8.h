@@ -429,6 +429,11 @@ struct chip8{
     }
     // Adds VX to I.
     void op_FX1E(){
+        if (I + V[(opcode & 0x0F00) >> 8] > 0xFFF){
+            V[0xF] = 1;
+        }else{
+            V[0xF] = 0;
+        }
         I += V[(opcode & 0x0F00) >> 8];
         pc += 2;
     }

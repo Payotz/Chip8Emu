@@ -7,9 +7,9 @@
 unsigned char chip8_fontset[80] ={
     0xF0, 0x90, 0x90, 0x90, 0xF0, //0
     0x20, 0x60, 0x20, 0x20, 0x70, //1
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, //2
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, //3
-    0x90, 0x90, 0xF0, 0x10, 0xF0, //4
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, //2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, //3
+    0x90, 0x90, 0xF0, 0x10, 0x10, //4
     0xF0, 0x80, 0xF0, 0x10, 0xF0, //5
     0xF0, 0x80, 0xF0, 0x90, 0xF0, //6
     0xF0, 0x10, 0x20, 0x40, 0x40, //7
@@ -91,9 +91,9 @@ struct chip8{
         opcode = memory[pc] << 8 | memory[pc+1];
         switch(opcode & 0xF000){
             case 0x0000:
-                switch(opcode & 0x0FFF){
-                    case 0x00F0: op_00E0(); break;
-                    case 0x00FF: op_00EE(); break;
+                switch(opcode & 0x000F){
+                    case 0x0000: op_00E0(); break;
+                    case 0x000E: op_00EE(); break;
                     default:
                         std::cout << "Opcode not found : ( " << opcode << " ) at Memory Location : (" << pc << ")" << std::endl;
                         break;
@@ -473,7 +473,7 @@ struct chip8{
         for (int i = 0; i < ((opcode & 0x0F00) >> 8); ++i){
             V[i] = memory[I + 1];
         }
-        I += ((opcode & 0x0F00) >> 8 ) + 1;
+        
         pc +=2;
     }
 } ;

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <cstdlib>
 
 
@@ -36,6 +37,7 @@ struct chip8{
     unsigned short stack[16];
     unsigned short sp;
     unsigned char key[16];
+    Mix_Chunk *beep;
 
     bool drawFlag = false;
     bool getKeys = false;
@@ -67,6 +69,7 @@ struct chip8{
                 gfx[i][j] = oldgfx[i][j] = 0;
             }
         }
+        beep = Mix_LoadWAV("beep.wav");
     }
 
     void loadFile(const char* fileName){
@@ -161,7 +164,7 @@ struct chip8{
         }
         if(sound_timer > 0){
             if(sound_timer == 1)
-                printf("BEEP!\n");
+                Mix_PlayChannel(-1,beep,0);
             --sound_timer;
         }
     }

@@ -3,5 +3,6 @@
 *.dll
 *.obj
 *.exe
+*.txt
 pong
 s

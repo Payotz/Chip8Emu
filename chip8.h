@@ -30,8 +30,7 @@ struct chip8{
     unsigned char V[16];
     unsigned short I;
     unsigned short pc;
-    unsigned char gfx[64][32];
-    unsigned char oldgfx[64][32];
+    unsigned char gfx[128][64];
     unsigned char delay_timer;
     unsigned char sound_timer;
     unsigned short stack[16];
@@ -39,6 +38,8 @@ struct chip8{
     unsigned char key[16];
     Mix_Chunk *beep;
 
+    bool soundEnabled = true;
+    bool extendedMode = true;
     bool drawFlag = false;
     bool getKeys = false;
     bool running = true;
@@ -64,9 +65,9 @@ struct chip8{
         for (int i = 0; i < 16; ++i){
             key[i] = V[i] = 0;
         }
-        for (int i = 0; i < 64; ++i){
-            for (int j = 0; j < 32; ++j){
-                gfx[i][j] = oldgfx[i][j] = 0;
+        for (int i = 0; i < 128; ++i){
+            for (int j = 0; j < 64; ++j){
+                gfx[i][j] = 0;
             }
         }
         beep = Mix_LoadWAV("beep.wav");
@@ -162,10 +163,12 @@ struct chip8{
         if(delay_timer > 0){
             --delay_timer;
         }
-        if(sound_timer > 0){
-            if(sound_timer == 1)
-                Mix_PlayChannel(-1,beep,0);
-            --sound_timer;
+        if(soundEnabled){
+            if(sound_timer > 0){
+                if(sound_timer == 1)
+                    Mix_PlayChannel(-1,beep,0);
+                --sound_timer;
+            }
         }
     }
 
@@ -190,7 +193,19 @@ struct chip8{
                 case SDLK_x: key[0x0] = 1; return true; break;
                 case SDLK_c: key[0xB] = 1; return true; break;
                 case SDLK_v: key[0xF] = 1; return true; break;
+                case SDLK_PLUS:
+                    soundEnabled = true;
+                    return true;
+                    break;
+                case SDLK_MINUS:
+                    soundEnabled = false;
+                    return true;
+                    break;
                 case SDLK_ESCAPE:
+                    running = false;
+                    return true;
+                    break;
+                case SDLK_BACKSPACE:
                     running = false;
                     return true;
                     break;
@@ -219,11 +234,15 @@ struct chip8{
             }
         }
     }
+    //Scroll display N lines down
+    void op_00CN(){
+
+    }
 
     // Clears the screen.
     void op_00E0(){
-        for (int i = 0; i < 64; i++){
-            for(int j = 0; j < 32; j++){
+        for (int i = 0; i < 128; i++){
+            for(int j = 0; j < 64; j++){
                 gfx[i][j] = 0;
             }
         }
@@ -235,6 +254,26 @@ struct chip8{
         --sp;
         pc = stack[sp];
         pc +=2;
+    }
+    //Scroll display 4 pixels right
+    void op_00FB(){
+
+    }
+    //Scroll display 4 pixels left
+    void op_00FC(){
+
+    }
+    //Exit CHIP interpreter
+    void op_00FD(){
+
+    }
+    //Disable extended screen mode
+    void op_00FE(){
+
+    }
+    //Enable extended screen mode for full-screen graphics
+    void op_00FF(){
+
     }
     //Jumps to address NNN.
     void op_1NNN(){
@@ -366,6 +405,7 @@ struct chip8{
     // Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N pixels. 
     // Each row of 8 pixels is read as bit-coded starting from memory location I; I value doesn’t change after the execution of this instruction. 
     // As described above, VF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn, and to 0 if that doesn’t happen
+    // If N=0 and extended mode, show 16x16 sprite.
     void op_DXYN(){
         unsigned short x = V[(opcode & 0x0F00) >> 8];
         unsigned short y = V[(opcode & 0x00F0) >> 4];
@@ -373,20 +413,28 @@ struct chip8{
         unsigned short pixel;
 
         V[0xF] = 0;
-        for (int i =0; i < 64; i++){
-            for (int j = 0; j < 32; j++){
-                oldgfx[i][j] = gfx[i][j];
-            }
-        }
-
-        for (int yline = 0; yline < height; yline++){
-            pixel = memory[I + yline];
-            for(int xline = 0; xline < 8; xline++){
-                if((pixel & (0x80 >> xline)) !=0){
-                    if(gfx[x + xline][y + yline] == 1){
-                        V[0xF] = 1;
+        if (((opcode & 0x000F) == 0) && extendedMode){
+            for (int yline = 0; yline < 16; yline++){
+                pixel = memory[I + yline];
+                for(int xline = 0; xline < 16; xline++){
+                    if((pixel & (0x80 >> xline)) !=0){
+                        if(gfx[x + xline][y + yline] == 1){
+                            V[0xF] = 1;
+                        }
+                        gfx[x + xline][y + yline] ^= 1;
                     }
-                    gfx[x + xline][y + yline] ^= 1;
+                }
+            }
+        }else{
+            for (int yline = 0; yline < height; yline++){
+                pixel = memory[I + yline];
+                for(int xline = 0; xline < 8; xline++){
+                    if((pixel & (0x80 >> xline)) !=0){
+                        if(gfx[x + xline][y + yline] == 1){
+                            V[0xF] = 1;
+                        }
+                        gfx[x + xline][y + yline] ^= 1;
+                    }
                 }
             }
         }
@@ -453,6 +501,11 @@ struct chip8{
         I = V[(opcode & 0x0F00) >> 8] * 0x5;
         pc +=2;
     }
+    // Point I to 10-byte font sprite for digit VX (0..9)
+    void op_FX30(){
+        I = V[(opcode & 0xF00) >> 8] * 0x10;
+        pc +=2;
+    }
     // Stores the binary-coded decimal representation of VX, with the most significant of three digits at the address in I, 
     // the middle digit at I plus 1, and the least significant digit at I plus 2. 
     // (In other words, take the decimal representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, 
@@ -478,5 +531,13 @@ struct chip8{
         }
         
         pc +=2;
+    }
+    // Store V0..VX in RPL user flags (X <= 7)
+    void op_FX75(){
+
+    }
+    // Read V0..VX from RPL user flags (X <= 7) 
+    void op_FX85(){
+
     }
 } ;

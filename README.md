@@ -17,11 +17,15 @@ Visual Studio 2015 Build Tools
 Execute the binary via command line. Ex: `main.exe <rom_file>`
 
 **Disclaimer**
-The roms here are not made by me. Most of them were made by David Winter.
+
+The SCHIP part of this emulator is still WIP. 
 
 beep.wav is from : http://soundbible.com/1252-Bleep.html
 
+Roms came from : https://www.zophar.net/pdroms/chip8.html
+
 **References**:
+
 http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
 
 http://devernay.free.fr/hacks/chip8/C8TECH10.HTM

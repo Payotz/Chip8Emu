@@ -61,9 +61,18 @@ int main (int argc, char* argv[]){
                 }
             }
         }
+        if(((currentTime - previousTime) / 60) > 60){
+            if(MyChip8.sound_timer > 0){
+                MyChip8.sound_timer--;
+            }else if(MyChip8.delay_timer > 0){
+                MyChip8.delay_timer--;
+            }
+        }
         if(((currentTime - previousTime) / 1000) > 1000){
             SDL_Delay((currentTime - previousTime) / 1000);
         }
+
+
         SDL_RenderPresent(renderTarget);
         MyChip8.drawFlag = false;
         }

@@ -44,6 +44,9 @@ struct chip8{
     bool getKeys = false;
     bool running = true;
 
+    unsigned int width_pos = 4;
+    unsigned int height_pos = 0;
+
     typedef void (*Opcode)();
     Opcode opcode_list[35];
 
@@ -164,11 +167,8 @@ struct chip8{
             --delay_timer;
         }
         if(soundEnabled){
-            if(sound_timer > 0){
-                if(sound_timer == 1)
-                    Mix_PlayChannel(-1,beep,0);
-                --sound_timer;
-            }
+            if(sound_timer == 1)
+                Mix_PlayChannel(-1,beep,0);
         }
     }
 
@@ -236,7 +236,11 @@ struct chip8{
     }
     //Scroll display N lines down
     void op_00CN(){
-
+        for (int i = 0; i < 128; i++){
+            for(int j = 0; j < 64; j++){
+                gfx[i][j] = gfx[i][j + (opcode & 0x000F)];
+            }
+        }
     }
 
     // Clears the screen.
@@ -257,23 +261,31 @@ struct chip8{
     }
     //Scroll display 4 pixels right
     void op_00FB(){
-
+        for(int i = 0; i < 128; i++){
+            for(int j = 0; j < 64; j++){
+                gfx[i][j] = gfx[i - 4][j];
+            }
+        }
     }
     //Scroll display 4 pixels left
     void op_00FC(){
-
+        for(int i = 0; i < 128; i++){
+            for (int j =0; j < 64; j++){
+                gfx[i][j] = gfx[i + 4][j];
+            }
+        }
     }
     //Exit CHIP interpreter
     void op_00FD(){
-
+        running = false;
     }
     //Disable extended screen mode
     void op_00FE(){
-
+        extendedMode = false;
     }
     //Enable extended screen mode for full-screen graphics
     void op_00FF(){
-
+        extendedMode = true;
     }
     //Jumps to address NNN.
     void op_1NNN(){
